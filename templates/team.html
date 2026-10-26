@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import pill with context %}
+{% block body %}
+<h1>Team · {{ user.center_name }}</h1>
+<form method="post" action="{{ url_for('user_create') }}" class="card">{{ csrf_field() }}
+  <h2 style="margin-top:0">Create user</h2>
+  <div class="grid">
+    <label>Full name<input name="name" maxlength="100" required placeholder="Anjali Menon"></label>
+    <label>Username<input name="username" maxlength="50" required pattern="[a-z0-9._]{3,50}" placeholder="anjali" title="Lowercase letters, numbers, dot, underscore"></label>
+    <label>Password (8+ characters)<input name="password" type="text" minlength="8" required autocomplete="new-password"></label>
+    <label>Role<select name="role"><option value="counsellor">Counsellor</option><option value="admin">Admin</option></select></label>
+  </div>
+  <button class="btn primary">Create user</button>
+</form>
+
+<h2>Users</h2>
+{% for u in users %}
+<div class="row">
+  <div class="grow">
+    <span class="strong">{{ u.name }}</span>{% if u.id == user.id %} <span class="sub">(you)</span>{% endif %}
+    <div class="sub">@{{ u.username }} · {{ u.total }} leads · {{ u.open_leads }} open · {{ u.enrolled }} enrolled</div>
+  </div>
+  {% if u.is_primary %}{{ pill('Main admin', 'w') }}{% else %}{{ pill(u.role, 's' if u.role == 'admin' else 'b') }}{% endif %}
+  {{ pill('Active' if u.active else 'Inactive', 's' if u.active else 'd') }}
+  <div class="actions">
+    {% if u.is_primary %}
+      <span class="sub">Managed by super admin</span>
+    {% else %}
+      {% if u.id != user.id %}
+      <form method="post" action="{{ url_for('user_toggle', uid=u.id) }}" class="inline">{{ csrf_field() }}<button class="btn sm">{{ 'Deactivate' if u.active else 'Activate' }}</button></form>
+      {% endif %}
+      <form method="post" action="{{ url_for('user_reset', uid=u.id) }}" class="inline" onsubmit="return confirm('Generate a new temporary password?')">{{ csrf_field() }}<button class="btn sm">Reset password</button></form>
+      {% if not u.active and u.open_leads %}
+      <form method="post" action="{{ url_for('user_move', uid=u.id) }}" class="inline">{{ csrf_field() }}<button class="btn sm">Reassign {{ u.open_leads }} open leads</button></form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

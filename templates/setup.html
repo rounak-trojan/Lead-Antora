@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Set up · {{ cfg.inst }}{% endblock %}
+{% block body %}
+<div class="auth card">
+  <h1>Create the super admin</h1>
+  <p class="sub">This page works only once, while no users exist.</p>
+  <form method="post">{{ csrf_field() }}
+    <label>Full name<input name="name" maxlength="100" required></label>
+    <label>Username<input name="username" maxlength="50" required pattern="[a-z0-9._]{3,50}" autocomplete="username"></label>
+    <label>Password (8+ characters)<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+    <label>Confirm password<input name="confirm" type="password" minlength="8" required autocomplete="new-password"></label>
+    <button class="btn primary wide">Create super admin</button>
+  </form>
+</div>
+{% endblock %}

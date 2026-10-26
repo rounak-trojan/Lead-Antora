@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import pill, stage_pill with context %}
+{% block body %}
+<p><a class="btn sm" href="{{ url_for('leads') }}">← Leads</a></p>
+<div class="card">
+  <div class="head">
+    <div class="grow">
+      <h1>{{ l.name }} {{ stage_pill(l.stage) }}</h1>
+      <div class="sub">{{ l.phone }}{% if l.parent_phone %} · parent {{ l.parent_phone }}{% endif %}{% if l.email %} · {{ l.email }}{% endif %}{% if l.city %} · {{ l.city }}{% endif %}{% if l.target %} · {{ l.target }}{% endif %}</div>
+      <div class="sub">{{ l.course or '—' }} · {{ l.source or '—' }} · counsellor {{ l.counsellor or 'Unassigned' }} · created {{ l.created_at.strftime('%d %b %Y') }}</div>
+      {% if l.notes %}<div class="sub">Notes: {{ l.notes }}</div>{% endif %}
+      {% if l.stage == 'Enrolled' %}
+      <div style="margin-top:6px">Fee {{ l.fee|inr }} · paid {{ l.paid|inr }} ·
+        <span class="{{ 'late' if l.fee > l.paid else 'okc' }}">pending {{ ((l.fee - l.paid) if l.fee > l.paid else 0)|inr }}</span></div>
+      {% endif %}
+      {% if l.stage == 'Lost' %}<div class="sub late">Lost: {{ l.lost_reason }}</div>{% endif %}
+    </div>
+    <div class="actions">
+      <a class="btn sm" href="{{ wa_link(l) }}" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn sm" href="tel:{{ l.phone }}">Call</a>
+      {% if l.parent_phone %}<a class="btn sm" href="tel:{{ l.parent_phone }}">Call parent</a>{% endif %}
+      <a class="btn sm" href="{{ url_for('lead_edit', lid=l.id) }}">Edit</a>
+      {% if user.role == 'admin' %}
+      <form method="post" action="{{ url_for('lead_delete', lid=l.id) }}" class="inline" onsubmit="return confirm('Delete this lead permanently?')">{{ csrf_field() }}<button class="btn sm danger">Delete</button></form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<h2>Log activity</h2>
+<form method="post" action="{{ url_for('lead_activity', lid=l.id) }}" class="card">{{ csrf_field() }}
+  <div class="grid">
+    <label>Type<select name="type">{% for t in act_types %}<option>{{ t }}</option>{% endfor %}</select></label>
+    <label>Stage<select name="stage">{% for s in STAGES %}<option {{ 'selected' if s == l.stage }}>{{ s }}</option>{% endfor %}</select></label>
+    <label>Next follow-up<input type="date" name="next_followup" value="{{ next_default }}"></label>
+  </div>
+  <label>What happened *<input name="text" maxlength="2000" required placeholder="Spoke to parent, demo fixed for Sunday 11am"></label>
+  <div class="grid">
+    <label>Total fee (if enrolling)<input type="number" name="fee" min="0" step="1" value="{{ l.fee|int if l.fee else '' }}"></label>
+    <label>Paid now (if enrolling)<input type="number" name="paid_now" min="0" step="1"></label>
+    <label>Lost reason (if lost)<select name="lost_reason"><option value="">Select</option>
+      {% for r in cfg.lost_reasons %}<option {{ 'selected' if r == l.lost_reason }}>{{ r }}</option>{% endfor %}</select></label>
+  </div>
+  <button class="btn primary">Save activity</button>
+</form>
+
+{% if l.stage == 'Enrolled' %}
+<h2>Record fee payment</h2>
+<form method="post" action="{{ url_for('lead_payment', lid=l.id) }}" class="toolbar">{{ csrf_field() }}
+  <input type="number" name="amount" min="1" step="1" required placeholder="5000" style="flex:1;width:auto">
+  <button class="btn">Add payment</button>
+</form>
+{% endif %}
+
+<h2>Timeline</h2>
+{% for a in acts %}
+<div class="row">
+  <span class="sub" style="min-width:120px">{{ a.created_at.strftime('%d %b %Y %H:%M') }}</span>
+  {{ pill(a.type, 'n' if a.type == 'System' else 's' if a.type == 'Payment' else 'b') }}
+  <div class="grow">{{ a.text }}<div class="sub">{{ a.uname or 'Deleted user' }}</div></div>
+</div>
+{% endfor %}
+{% endblock %}

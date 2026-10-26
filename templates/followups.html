@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import lead_row with context %}
+{% block body %}
+<h1>Follow-ups</h1>
+{% for title, items, empty_msg in groups %}
+<h2>{{ title }} ({{ items|length }})</h2>
+{% for l in items %}{{ lead_row(l) }}{% else %}<p class="empty">{{ empty_msg }}</p>{% endfor %}
+{% endfor %}
+{% endblock %}

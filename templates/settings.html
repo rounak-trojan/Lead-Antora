@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Settings</h1>
+<form method="post" class="card">{{ csrf_field() }}
+  <label>Institute name<input name="inst" maxlength="120" required value="{{ cfg.inst }}"></label>
+  <label>Courses, comma separated<input name="courses" required value="{{ cfg.courses|join(', ') }}"></label>
+  <label>Lead sources, comma separated<input name="sources" required value="{{ cfg.sources|join(', ') }}"></label>
+  <label>Lost reasons, comma separated<input name="lost_reasons" required value="{{ cfg.lost_reasons|join(', ') }}"></label>
+  <label>WhatsApp template. Placeholders: {name} {course} {counsellor} {inst}
+    <textarea name="wa_template" rows="2" maxlength="500" required>{{ cfg.wa_template }}</textarea></label>
+  <button class="btn primary">Save settings</button>
+</form>
+{% endblock %}

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Sign in · Lead Antora</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+{% from '_brand.html' import logo %}
+<div class="auth-split">
+  <aside class="auth-side">
+    <a href="{{ url_for('landing') }}" class="brand light">{{ logo(32, 'lg-side') }}<span>Lead Antora</span></a>
+    <div>
+      <h2>Turn every enquiry into an admission.</h2>
+      <ul class="ticks light">
+        <li>Instagram, Facebook, Google and YouTube leads in one inbox</li>
+        <li>Instant round-robin assignment to counsellors</li>
+        <li>Today's calls, overdue follow-ups and fee dues at a glance</li>
+      </ul>
+    </div>
+    <p class="sub light">© {{ today.year }} Lead Antora</p>
+  </aside>
+
+  <main class="auth-main">
+    <a class="back sub" href="{{ url_for('landing') }}">← Back to home</a>
+    <div class="auth-box">
+      <a href="{{ url_for('landing') }}" class="brand only-sm">{{ logo(30, 'lg-mob') }}<span>Lead Antora</span></a>
+      <h1>Sign in</h1>
+      <p class="sub">Use the username and password given to you.</p>
+
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+      {% endwith %}
+
+      <form method="post">{{ csrf_field() }}
+        <label>Username<input name="username" autocomplete="username" required autofocus></label>
+        <label>Password
+          <span class="pw"><input name="password" id="pw" type="password" autocomplete="current-password" required>
+          <button type="button" class="pw-t" id="pwT" aria-label="Show password">Show</button></span></label>
+        <button class="btn primary wide lg">Sign in</button>
+      </form>
+
+      <p class="sub small" style="margin-top:18px">Forgot your password? Ask your center admin to reset it from the Team page.</p>
+    </div>
+  </main>
+</div>
+<script>
+document.getElementById('pwT').addEventListener('click', function () {
+  var p = document.getElementById('pw'), show = p.type === 'password';
+  p.type = show ? 'text' : 'password';
+  this.textContent = show ? 'Hide' : 'Show';
+  this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+});
+</script>
+</body>
+</html>

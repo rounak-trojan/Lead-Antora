@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import pill with context %}
+{% block body %}
+{% set ST = {'created':'s','merged':'b','test':'n','duplicate':'n','received':'w','disabled':'w','invalid':'w','center_closed':'d','fetch_failed':'d'} %}
+
+{% macro copybox(id, value) %}
+<div class="copy"><input id="{{ id }}" class="mono" value="{{ value }}" readonly><button type="button" class="btn sm" data-copy="{{ id }}">Copy</button></div>
+{% endmacro %}
+
+{% macro switch(ch) %}
+{% set on = it['ch_' ~ ch] %}
+<form method="post" class="card row">{{ csrf_field() }}
+  <input type="hidden" name="action" value="toggle"><input type="hidden" name="channel" value="{{ ch }}">
+  <div class="grow"><span class="strong">{{ names[ch] }} capture</span>
+    <div class="sub">{{ 'New submissions become leads and are auto-assigned.' if on else 'Submissions are logged below but no lead is created.' }}</div></div>
+  {{ pill('On' if on else 'Off', 's' if on else 'd') }}
+  <button class="btn sm">{{ 'Switch off' if on else 'Switch on' }}</button>
+</form>
+{% endmacro %}
+
+{% macro testbtn(ch) %}
+<form method="post" class="inline">{{ csrf_field() }}<input type="hidden" name="action" value="test"><input type="hidden" name="channel" value="{{ ch }}"><button class="btn sm">Create test lead</button></form>
+{% endmacro %}
+
+{% macro logtable(rows) %}
+<h2>Recent deliveries</h2>
+{% if rows %}
+<div class="tw"><table class="tbl">
+  <tr><th>Time</th><th>Channel</th><th>Result</th><th>Detail</th><th>Lead</th></tr>
+  {% for r in rows %}
+  <tr>
+    <td>{{ r.created_at.strftime('%d %b %H:%M') }}</td>
+    <td>{{ names.get(r.channel, r.channel|capitalize) }}{% if r.provider == 'test' %} · test{% endif %}</td>
+    <td>{{ pill(r.status|replace('_', ' '), ST.get(r.status, 'n')) }}</td>
+    <td class="sub">{{ r.detail or '' }}</td>
+    <td>{% if r.lead_id %}<a href="{{ url_for('lead_detail', lid=r.lead_id) }}">Open</a>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% else %}<p class="empty">Nothing received yet.</p>{% endif %}
+{% endmacro %}
+
+<h1>Webhooks · {{ user.center_name }}</h1>
+<p class="sub">Leads from ads, social profiles and your website arrive here automatically and are assigned round-robin.</p>
+
+<div class="chips">
+  {% for key, label in tabs %}
+  <a class="chip {{ 'on' if tab == key }}" href="{{ url_for('webhooks', tab=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{# ---------------- OVERVIEW ---------------- #}
+{% if tab == 'overview' %}
+<div class="ch">
+  {% for key, label in channels %}
+  {% set s = stats.get(key) %}
+  <a class="card" href="{{ url_for('webhooks', tab=key) }}" style="color:inherit">
+    <div class="strong">{{ label }}</div>
+    <div style="margin:6px 0">
+      {{ pill('On' if it['ch_' ~ key] else 'Off', 's' if it['ch_' ~ key] else 'd') }}
+      {{ pill('Connected' if connected[key] else 'Not set up', 'b' if connected[key] else 'w') }}
+    </div>
+    <div class="sub">Last 30 days: {{ s.created if s else 0 }} new · {{ s.merged if s else 0 }} repeat · {{ s.problems if s else 0 }} rejected</div>
+    <div class="sub">Last delivery: {{ s.last[:16] if s and s.last else 'never' }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% if failed %}<div class="warn">{{ failed }} Meta lead(s) could not be downloaded. <a href="{{ url_for('webhooks', tab='meta') }}">Fix in Meta setup</a></div>{% endif %}
+{% if tests %}
+<form method="post" class="warn">{{ csrf_field() }}<input type="hidden" name="action" value="delete_tests">
+  {{ tests }} test lead(s) exist. <button class="btn sm">Delete test leads</button></form>
+{% endif %}
+{{ logtable(logs) }}
+<details class="card" style="margin-top:16px"><summary>Danger zone</summary>
+  <p class="sub">Rotating changes every webhook URL and the hosted form link for this center. Use it only if a URL leaked.</p>
+  <form method="post" onsubmit="return confirm('All current webhook URLs will stop working. Continue?')">{{ csrf_field() }}
+    <button class="btn danger" name="action" value="rotate">Rotate webhook URLs</button></form>
+</details>
+
+{# ---------------- META SETUP ---------------- #}
+{% elif tab == 'meta' %}
+<div class="card">
+  <p class="sub" style="margin-top:0">One Meta connection powers both the Instagram and Facebook tabs. Status:
+    {{ pill('Ready' if meta_ready else 'Incomplete', 's' if meta_ready else 'w') }}</p>
+  <h2 style="margin-top:0">Step 1 · Create the Meta app and webhook</h2>
+  <ol class="steps">
+    <li>Open developers.facebook.com, choose My Apps, then Create App, type <b>Business</b>.</li>
+    <li>Add the <b>Webhooks</b> product. Pick object <b>Page</b>, click Subscribe to this object and paste:</li>
+  </ol>
+  <label>Callback URL</label>{{ copybox('meta_url', urls.meta) }}
+  <label>Verify token</label>{{ copybox('meta_verify', it.meta_verify) }}
+  <ol class="steps" start="3">
+    <li>Click Verify and save, then subscribe to the <b>leadgen</b> field.</li>
+    <li>In App settings, Basic: add a Privacy Policy URL, then switch App Mode to <b>Live</b>. Development mode only receives test events.</li>
+  </ol>
+  <form method="post" class="inline">{{ csrf_field() }}<button class="btn sm" name="action" value="meta_verify">Generate new verify token</button></form>
+</div>
+
+<form method="post" class="card">{{ csrf_field() }}<input type="hidden" name="action" value="meta_app">
+  <h2 style="margin-top:0">Step 2 · App credentials</h2>
+  <p class="sub">From App settings, Basic.</p>
+  <div class="grid">
+    <label>App ID<input name="meta_app_id" inputmode="numeric" value="{{ it.meta_app_id or '' }}" required></label>
+    <label>App Secret {% if has_secret %}(saved, leave blank to keep){% endif %}<input name="meta_app_secret" type="password" autocomplete="off" placeholder="{{ '••••••••' if has_secret else '' }}"></label>
+  </div>
+  <button class="btn primary">Save app details</button>
+</form>
+
+<form method="post" class="card">{{ csrf_field() }}<input type="hidden" name="action" value="meta_connect">
+  <h2 style="margin-top:0">Step 3 · Link your Facebook page</h2>
+  <ol class="steps">
+    <li>Open Graph API Explorer and select this app.</li>
+    <li>Add permissions: pages_show_list, pages_read_engagement, pages_manage_metadata, pages_manage_ads, leads_retrieval, ads_management, business_management.</li>
+    <li>Click Generate Access Token, pick your page, then paste the token here. It is exchanged for a permanent page token and is not stored.</li>
+    <li>For Instagram ads, your Instagram account must be connected to this Facebook page.</li>
+  </ol>
+  <div class="grid">
+    <label>User access token<input name="user_token" autocomplete="off" required></label>
+    <label>Page ID (optional, blank links all pages on the token)<input name="page_id" inputmode="numeric"></label>
+  </div>
+  <button class="btn primary">Link page</button>
+</form>
+
+<div class="card">
+  <h2 style="margin-top:0">Step 4 · Give the app access to leads</h2>
+  <p class="sub" style="margin:0">Meta Business Suite, Settings, Integrations, Leads access: select your page and grant access to this app. Skipping this step makes every lead download fail. Then test with Meta's Lead Ads Testing Tool.</p>
+</div>
+
+<h2>Linked pages</h2>
+{% for p in pages %}
+<div class="row">
+  <div class="grow"><span class="strong">{{ p.name or 'Page' }}</span><div class="sub">ID {{ p.page_id }} · linked {{ p.created_at.strftime('%d %b %Y') }}</div></div>
+  <form method="post" class="inline" onsubmit="return confirm('Unlink this page? Its leads will stop arriving.')">{{ csrf_field() }}
+    <input type="hidden" name="page_id" value="{{ p.page_id }}"><button class="btn sm danger" name="action" value="meta_unlink">Unlink</button></form>
+</div>
+{% else %}<p class="empty">No pages linked.</p>{% endfor %}
+<div class="toolbar" style="margin-top:10px">
+  {% if pages %}<form method="post" class="inline">{{ csrf_field() }}<button class="btn sm" name="action" value="meta_check">Check connection</button></form>{% endif %}
+  {% if failed %}<form method="post" class="inline">{{ csrf_field() }}<button class="btn sm primary" name="action" value="meta_retry">Retry {{ failed }} failed lead(s)</button></form>{% endif %}
+</div>
+{{ logtable(logs) }}
+
+{# ---------------- INSTAGRAM ---------------- #}
+{% elif tab == 'instagram' %}
+{{ switch('instagram') }}
+<div class="card">
+  <h2 style="margin-top:0">Instagram lead ads {{ pill('Ready' if meta_ready else 'Set up Meta first', 's' if meta_ready else 'w') }}</h2>
+  <p class="sub">Leads from Instagram ads that use an Instant Form arrive through the Meta connection and are tagged <b>Instagram Ads</b>.
+    {% if not meta_ready %}<a href="{{ url_for('webhooks', tab='meta') }}">Complete Meta setup</a>.{% endif %}</p>
+  <h2>Instagram bio link (organic)</h2>
+  <p class="sub">Your profile cannot hold a form. Put this link in your bio. Leads are tagged <b>Instagram</b>.</p>
+  {{ copybox('ig_bio', urls.form ~ '?utm_source=instagram&utm_medium=bio') }}
+  <p class="sub">For stories and post links use utm_medium=story or utm_medium=post to see which works.</p>
+  {{ testbtn('instagram') }}
+</div>
+{{ logtable(logs) }}
+
+{# ---------------- FACEBOOK ---------------- #}
+{% elif tab == 'facebook' %}
+{{ switch('facebook') }}
+<div class="card">
+  <h2 style="margin-top:0">Facebook lead ads {{ pill('Ready' if meta_ready else 'Set up Meta first', 's' if meta_ready else 'w') }}</h2>
+  <p class="sub">Leads from Facebook ads with an Instant Form arrive through the Meta connection and are tagged <b>Facebook Ads</b>.
+    {% if not meta_ready %}<a href="{{ url_for('webhooks', tab='meta') }}">Complete Meta setup</a>.{% endif %}</p>
+  <h2>Page button and posts (organic)</h2>
+  <p class="sub">Set your page's action button to this link. Leads are tagged <b>Facebook</b>.</p>
+  {{ copybox('fb_link', urls.form ~ '?utm_source=facebook&utm_medium=page') }}
+  {{ testbtn('facebook') }}
+</div>
+{{ logtable(logs) }}
+
+{# ---------------- GOOGLE ADS ---------------- #}
+{% elif tab == 'google' %}
+{{ switch('google') }}
+<div class="card">
+  <h2 style="margin-top:0">Google Ads lead forms {{ pill('Key set' if google_key else 'No key', 's' if google_key else 'w') }}</h2>
+  <ol class="steps">
+    <li>Generate a key below.</li>
+    <li>In Google Ads open Assets, Lead forms, open your form, then the webhook integration section under lead delivery.</li>
+    <li>Paste the URL and key, save, then click <b>Send test data</b>. A test row appears in the log below.</li>
+    <li>Repeat for every lead form. Search, Display, Discovery and YouTube forms all use this same URL and key.</li>
+  </ol>
+  <label>Webhook URL</label>{{ copybox('g_url', urls.google) }}
+  <label>Key</label>
+  {% if google_key %}{{ copybox('g_key', google_key) }}{% else %}<p class="sub">No key yet.</p>{% endif %}
+  <form method="post" class="inline" {% if google_key %}onsubmit="return confirm('The old key stops working immediately. Continue?')"{% endif %}>{{ csrf_field() }}
+    <button class="btn sm {{ '' if google_key else 'primary' }}" name="action" value="google_key">{{ 'Replace key' if google_key else 'Generate key' }}</button></form>
+  {{ testbtn('google') }}
+</div>
+{{ logtable(logs) }}
+
+{# ---------------- YOUTUBE ---------------- #}
+{% elif tab == 'youtube' %}
+{{ switch('youtube') }}
+<div class="card">
+  <h2 style="margin-top:0">YouTube ads</h2>
+  <p class="sub">YouTube ad leads come through Google Ads and use the Google URL and key. Google does not say which network served the ad, so list the form IDs used only in YouTube campaigns. Those leads are tagged <b>YouTube Ads</b>. Find a form ID in the Google Ads log detail after sending test data.</p>
+  <form method="post">{{ csrf_field() }}<input type="hidden" name="action" value="youtube_forms">
+    <label>YouTube lead form IDs, comma separated<input name="youtube_forms" value="{{ it.youtube_forms or '' }}" placeholder="123456789, 987654321"></label>
+    <button class="btn primary">Save form IDs</button></form>
+  <h2>Video description link (organic)</h2>
+  <p class="sub">Put this in video descriptions, pinned comments and channel links. Leads are tagged <b>YouTube</b>.</p>
+  {{ copybox('yt_link', urls.form ~ '?utm_source=youtube&utm_medium=description') }}
+  {{ testbtn('youtube') }}
+</div>
+{{ logtable(logs) }}
+
+{# ---------------- WEBSITE ---------------- #}
+{% elif tab == 'website' %}
+{{ switch('website') }}
+<div class="card">
+  <h2 style="margin-top:0">Hosted enquiry page</h2>
+  <p class="sub">A ready form page for this center. Works without a website. This switch also controls the Instagram, Facebook and YouTube links, because they all open this page.</p>
+  {{ copybox('form_url', urls.form) }}
+  <a class="btn sm" href="{{ urls.form }}" target="_blank" rel="noopener">Open form</a>
+  {{ testbtn('website') }}
+</div>
+<div class="card">
+  <h2 style="margin-top:0">Embed on your own website</h2>
+  <p class="sub">Paste this into any page. UTM tags in the page URL are captured automatically.</p>
+{% set embed %}<form id="lm-enq">
+  <input name="name" placeholder="Student name" required>
+  <input name="phone" placeholder="Mobile number" inputmode="tel" required>
+  <input name="parent_phone" placeholder="Parent mobile (optional)" inputmode="tel">
+  <input name="email" type="email" placeholder="Email (optional)">
+  <input name="city" placeholder="City">
+  <select name="course">{% for c in cfg.courses %}<option>{{ c }}</option>{% endfor %}</select>
+  <input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px">
+  <button>Request a callback</button>
+</form>
+<script>
+(function(){
+  var f = document.getElementById('lm-enq'), u = new URLSearchParams(location.search);
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    var d = Object.fromEntries(new FormData(f));
+    ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){ if (u.get(k)) d[k] = u.get(k); });
+    fetch('{{ urls.web }}', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)})
+      .then(function(r){ return r.json().then(function(j){ return [r.ok, j]; }); })
+      .then(function(res){ f.innerHTML = res[0] ? '<p>Thank you. A counsellor will call you shortly.</p>' : '<p>' + (res[1].error || 'Please try again.') + '</p>'; })
+      .catch(function(){ alert('Network error. Please try again.'); });
+  });
+})();
+</script>{% endset %}
+  <textarea id="embed" class="mono" readonly>{{ embed }}</textarea>
+  <button type="button" class="btn sm" data-copy="embed">Copy code</button>
+  <h2>Direct API (Pabbly, Zapier, Make, Typeform, JustDial forwarders)</h2>
+  <p class="sub">POST JSON or form data with name and phone. Optional: email, city, course, parent_phone, utm_source. Any other fields are saved in the lead notes.</p>
+  {{ copybox('web_url', urls.web) }}
+</div>
+{{ logtable(logs) }}
+{% endif %}
+
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var el = document.getElementById(b.dataset.copy);
+    el.select();
+    (navigator.clipboard ? navigator.clipboard.writeText(el.value) : Promise.resolve(document.execCommand('copy')))
+      .then(function(){ var t = b.textContent; b.textContent = 'Copied'; setTimeout(function(){ b.textContent = t; }, 1200); });
+  });
+});
+</script>
+{% endblock %}

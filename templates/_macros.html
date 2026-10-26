@@ -1,0 +1,35 @@
+{% macro pill(text, kind) %}<span class="pill {{ kind }}">{{ text }}</span>{% endmacro %}
+
+{% macro stage_pill(s) %}{{ pill(s, {'New':'n','Contacted':'b','Interested':'b','Demo scheduled':'w','Demo attended':'w','Negotiation':'w','Enrolled':'s','Lost':'d'}.get(s, 'n')) }}{% endmacro %}
+
+{% macro lead_row(l, counsellors=none) %}
+<div class="row">
+  <div class="grow">
+    <a class="strong" href="{{ url_for('lead_detail', lid=l.id) }}">{{ l.name }}</a>
+    <div class="sub">{{ l.phone }} · {{ l.course or '—' }} · {{ l.source or '—' }}</div>
+  </div>
+  {{ stage_pill(l.stage) }}
+  {% if counsellors is not none %}
+  <form method="post" action="{{ url_for('lead_assign', lid=l.id) }}" class="inline">{{ csrf_field() }}
+    <select name="assigned_to" class="sm" onchange="this.form.submit()">
+      <option value="">Unassigned</option>
+      {% for c in counsellors if c.active or c.id == l.assigned_to %}
+      <option value="{{ c.id }}" {{ 'selected' if c.id == l.assigned_to }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+    <noscript><button class="btn sm">Save</button></noscript>
+  </form>
+  {% elif user.role == 'admin' %}<span class="sub">{{ l.counsellor or 'Unassigned' }}</span>{% endif %}
+  {% set is_open = l.stage in OPEN %}
+  <span class="sub due {{ 'late' if is_open and l.next_followup and l.next_followup < today }}">
+    {% if is_open %}
+      {% if not l.next_followup %}No follow-up
+      {% elif l.next_followup < today %}Overdue {{ l.next_followup.strftime('%d %b') }}
+      {% elif l.next_followup == today %}Today
+      {% else %}{{ l.next_followup.strftime('%d %b') }}{% endif %}
+    {% endif %}
+  </span>
+  <a class="btn sm" href="{{ wa_link(l) }}" target="_blank" rel="noopener">WhatsApp</a>
+  <a class="btn sm" href="tel:{{ l.phone }}">Call</a>
+</div>
+{% endmacro %}

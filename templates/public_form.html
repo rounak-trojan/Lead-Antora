@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{{ inst }} · Enquiry</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="form-page">
+  <div class="card">
+    <h1>{{ inst }}</h1>
+    {% if is_open %}
+    <p class="sub">Leave your details. A counsellor will call you back.</p>
+    <form id="enq">
+      <label>Student name<input name="name" maxlength="120" required autocomplete="name"></label>
+      <label>Mobile number<input name="phone" inputmode="tel" maxlength="20" required autocomplete="tel"></label>
+      <label>Parent mobile (optional)<input name="parent_phone" inputmode="tel" maxlength="20"></label>
+      <label>Email (optional)<input name="email" type="email" maxlength="120" autocomplete="email"></label>
+      <label>City<input name="city" maxlength="80"></label>
+      <label>Course<select name="course">{% for c in courses %}<option>{{ c }}</option>{% endfor %}</select></label>
+      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <div id="err" class="flash error" hidden></div>
+      <button class="btn primary wide lg">Request a callback</button>
+    </form>
+    <div id="done" class="flash ok" hidden>Thank you. Our counsellor will call you shortly.</div>
+    {% else %}
+    <p>Enquiries are closed right now. Please call the institute directly.</p>
+    {% endif %}
+  </div>
+  <p class="sub powered">Powered by <b>Lead Antora</b></p>
+</main>
+<script>
+(function(){
+  var f = document.getElementById('enq');
+  if (!f) return;
+  var u = new URLSearchParams(location.search), err = document.getElementById('err');
+  function fail(m){ err.textContent = m; err.hidden = false; }
+  f.addEventListener('submit', function(e){
+    e.preventDefault();
+    var b = f.querySelector('button'); b.disabled = true; err.hidden = true;
+    var d = Object.fromEntries(new FormData(f));
+    ['utm_source','utm_medium','utm_campaign','utm_content'].forEach(function(k){ if (u.get(k)) d[k] = u.get(k); });
+    fetch({{ post_url|tojson }}, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)})
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return [r.ok, j]; }); })
+      .then(function(res){
+        if (res[0]) { f.hidden = true; document.getElementById('done').hidden = false; }
+        else { fail(res[1].error || 'Could not submit. Please try again.'); b.disabled = false; }
+      })
+      .catch(function(){ fail('Network error. Check your connection and try again.'); b.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>

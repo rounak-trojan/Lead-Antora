@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>{{ 'New lead' if new else 'Edit lead' }}</h1>
+<form method="post" class="card">{{ csrf_field() }}
+  <div class="grid">
+    <label>Student name *<input name="name" maxlength="120" required value="{{ lead.get('name') or '' }}"></label>
+    <label>Phone *<input name="phone" type="tel" maxlength="20" required value="{{ lead.get('phone') or '' }}"></label>
+    <label>Parent phone<input name="parent_phone" type="tel" maxlength="20" value="{{ lead.get('parent_phone') or '' }}"></label>
+    <label>Email<input name="email" type="email" maxlength="120" value="{{ lead.get('email') or '' }}"></label>
+    <label>City<input name="city" maxlength="80" value="{{ lead.get('city') or '' }}"></label>
+    <label>Class or target exam<input name="target" maxlength="120" value="{{ lead.get('target') or '' }}"></label>
+    <label>Course<select name="course">
+      {% if lead.get('course') and lead.get('course') not in cfg.courses %}<option selected>{{ lead.get('course') }}</option>{% endif %}
+      {% for c in cfg.courses %}<option {{ 'selected' if lead.get('course') == c }}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Source<select name="source">
+      {% if lead.get('source') and lead.get('source') not in cfg.sources %}<option selected>{{ lead.get('source') }}</option>{% endif %}
+      {% for s in cfg.sources %}<option {{ 'selected' if lead.get('source') == s }}>{{ s }}</option>{% endfor %}</select></label>
+    {% if new %}<label>First follow-up<input type="date" name="next_followup" value="{{ lead.get('next_followup') or today }}"></label>{% endif %}
+    {% if user.role == 'admin' %}
+    {% set cur = lead.get('assigned_to')|string %}
+    <label>Assign to<select name="assigned_to">
+      {% if new %}<option value="auto" {{ 'selected' if cur == 'auto' }}>Auto (round robin)</option>{% endif %}
+      <option value="" {{ 'selected' if cur in ['', 'None'] }}>Unassigned</option>
+      {% for c in counsellors if c.active or c.id|string == cur %}
+      <option value="{{ c.id }}" {{ 'selected' if c.id|string == cur }}>{{ c.name }}</option>
+      {% endfor %}</select></label>
+    {% endif %}
+  </div>
+  <label>Notes<textarea name="notes" rows="2" maxlength="2000">{{ lead.get('notes') or '' }}</textarea></label>
+  <button class="btn primary">Save lead</button>
+  <a class="btn" href="{{ url_for('leads') if new else url_for('lead_detail', lid=lead.get('id')) }}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import pill with context %}
+{% block title %}Centers · Lead Antora{% endblock %}
+{% block body %}
+<div class="pagehead">
+  <div>
+    <h1>Centers</h1>
+    <p class="sub">{{ centers|length }} center(s) · {{ new_demos }} new demo request(s)</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="#demos">Demo requests{% if new_demos %}<span class="badge">{{ new_demos }}</span>{% endif %}</a>
+    <a class="btn" href="{{ url_for('backup_db') }}">Download full backup</a>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('center_create') }}" class="card">{{ csrf_field() }}
+  <h2 style="margin-top:0">Add center</h2>
+  <div class="grid">
+    <label>Center name<input name="name" maxlength="120" required placeholder="Patna Center"></label>
+    <label>City<input name="city" maxlength="80" placeholder="Patna"></label>
+    <label>Activate for<select name="months">{% for m in renew %}<option value="{{ m }}">{{ m }} month{{ 's' if m > 1 }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="grid">
+    <label>Main admin full name<input name="admin_name" maxlength="100" required></label>
+    <label>Main admin username<input name="admin_username" maxlength="50" required pattern="[a-z0-9._]{3,50}" title="Lowercase letters, numbers, dot, underscore"></label>
+    <label>Main admin password (8+ characters)<input name="admin_password" type="text" minlength="8" required autocomplete="new-password"></label>
+  </div>
+  <button class="btn primary">Create center</button>
+</form>
+
+<h2>All centers ({{ centers|length }})</h2>
+{% for c in centers %}
+<div class="card">
+  <div class="head">
+    <div class="grow">
+      <span class="strong">{{ c.name }}</span>{% if c.city %} <span class="sub">· {{ c.city }}</span>{% endif %}
+      <div class="sub">{{ c.users }} users · {{ c.leads }} leads · {{ c.enrolled }} enrolled</div>
+      <div class="sub">Valid until {{ c.active_until.strftime('%d %b %Y') }} ·
+        {% if c.days_left < 0 %}<span class="late">expired {{ -c.days_left }} day(s) ago</span>
+        {% elif c.days_left <= 7 %}<span class="late">{{ c.days_left }} day(s) left</span>
+        {% else %}{{ c.days_left }} days left{% endif %}</div>
+    </div>
+    {{ pill(c.status, 's' if c.status == 'Active' else 'd') }}
+  </div>
+
+  <div class="actions" style="margin-top:12px">
+    <form method="post" action="{{ url_for('center_renew', center_id=c.id) }}" class="inline">{{ csrf_field() }}
+      <select name="months" class="sm">{% for m in renew %}<option value="{{ m }}">+{{ m }} month{{ 's' if m > 1 }}</option>{% endfor %}</select>
+      <button class="btn sm primary">Renew</button>
+    </form>
+    <form method="post" action="{{ url_for('center_set_date', center_id=c.id) }}" class="inline">{{ csrf_field() }}
+      <input type="date" name="until" value="{{ c.active_until }}" required style="width:auto;padding:4px 6px;font-size:12px">
+      <button class="btn sm">Set date</button>
+    </form>
+    <form method="post" action="{{ url_for('center_toggle', center_id=c.id) }}" class="inline" onsubmit="return confirm('Change access for this center?')">{{ csrf_field() }}
+      <button class="btn sm {{ 'danger' if c.active }}">{{ 'Suspend center' if c.active else 'Resume center' }}</button>
+    </form>
+  </div>
+
+  <div style="margin-top:14px">
+    <div class="sub">Main admins</div>
+    {% for a in admins.get(c.id, []) %}
+    <div class="row">
+      <div class="grow">{{ a.name }} <span class="sub">@{{ a.username }}</span></div>
+      {{ pill('Active' if a.active else 'Inactive', 's' if a.active else 'd') }}
+      <form method="post" action="{{ url_for('center_admin_toggle', uid=a.id) }}" class="inline">{{ csrf_field() }}
+        <button class="btn sm">{{ 'Deactivate' if a.active else 'Activate' }}</button></form>
+      <form method="post" action="{{ url_for('center_admin_reset', uid=a.id) }}" class="inline" onsubmit="return confirm('Generate a new temporary password?')">{{ csrf_field() }}
+        <button class="btn sm">Reset password</button></form>
+    </div>
+    {% else %}<p class="sub">No main admin. Add one below.</p>{% endfor %}
+    <details style="margin-top:10px"><summary class="sub">Add another main admin</summary>
+      <form method="post" action="{{ url_for('center_admin_create', center_id=c.id) }}" style="margin-top:10px">{{ csrf_field() }}
+        <div class="grid">
+          <label>Full name<input name="admin_name" maxlength="100" required></label>
+          <label>Username<input name="admin_username" maxlength="50" required pattern="[a-z0-9._]{3,50}"></label>
+          <label>Password (8+ characters)<input name="admin_password" type="text" minlength="8" required autocomplete="new-password"></label>
+        </div>
+        <button class="btn sm">Add main admin</button>
+      </form>
+    </details>
+  </div>
+</div>
+{% else %}
+<p class="empty">No centers yet. Add the first one above.</p>
+{% endfor %}
+
+<h2 id="demos">Demo requests from the website{% if new_demos %}<span class="badge">{{ new_demos }} new</span>{% endif %}</h2>
+{% if demos %}
+<div class="tw"><table class="tbl left">
+  <thead><tr><th>Received</th><th>Contact</th><th>Institute</th><th>Centers</th><th>Message</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for d in demos %}
+  <tr>
+    <td>{{ d.created_at.strftime('%d %b %Y %H:%M') }}</td>
+    <td><span class="strong">{{ d.name }}</span><br><a href="tel:{{ d.phone }}">{{ d.phone }}</a></td>
+    <td>{{ d.institute }}{% if d.city %}<br><span class="sub">{{ d.city }}</span>{% endif %}</td>
+    <td>{{ d.centers or '—' }}</td>
+    <td class="sub">{{ d.message or '' }}</td>
+    <td>{{ pill('New' if d.status == 'new' else 'Contacted', 'w' if d.status == 'new' else 's') }}</td>
+    <td><div class="actions">
+      {% if d.status == 'new' %}
+      <form method="post" action="{{ url_for('demo_update', did=d.id) }}" class="inline">{{ csrf_field() }}
+        <button class="btn sm primary" name="action" value="contacted">Mark contacted</button></form>
+      {% endif %}
+      <form method="post" action="{{ url_for('demo_update', did=d.id) }}" class="inline" onsubmit="return confirm('Delete this request?')">{{ csrf_field() }}
+        <button class="btn sm danger" name="action" value="delete">Delete</button></form>
+    </div></td>
+  </tr>
+  {% endfor %}
+  </tbody></table></div>
+{% else %}
+<p class="empty">No demo requests yet. They appear here when visitors submit the form on the home page.</p>
+{% endif %}
+{% endblock %}

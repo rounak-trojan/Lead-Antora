@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="pagehead">
+  <div>
+    <h1>Welcome back, {{ user.name.split(' ')[0] }}</h1>
+    <p class="sub">{{ cfg.inst }} · {{ today.strftime('%A, %d %b %Y') }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('followups') }}">Today's follow-ups</a>
+    <a class="btn primary" href="{{ url_for('lead_new') }}">+ New lead</a>
+  </div>
+</div>
+
+<div class="chips">
+  {% for k, t in [('month','This month'), ('30','Last 30 days'), ('all','All time')] %}
+  <a class="chip {{ 'on' if rng == k }}" href="{{ url_for('dashboard', range=k) }}">{{ t }}</a>
+  {% endfor %}
+</div>
+
+<div class="metrics">
+  {% for label, val in metrics %}
+  <div class="metric {{ 'm-bad' if label == 'Overdue' and val|string != '0' }} {{ 'm-warn' if label == 'Due today' and val|string != '0' }}">
+    <span class="sub">{{ label }}</span><strong>{{ val }}</strong></div>
+  {% endfor %}
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2 style="margin-top:0">Pipeline funnel</h2>
+  {% for st, n, w in funnel %}
+  <div class="bar"><span class="sub">{{ st }}</span>
+    <div class="track"><div class="fill {{ 'd' if st == 'Lost' else 's' if st == 'Enrolled' }}" style="width: {{ w }}%"></div></div>
+    <span>{{ n }}</span></div>
+  {% endfor %}
+</div>
+
+{% if team %}
+<h2>Counsellor performance</h2>
+<div class="tw"><table class="tbl">
+  <thead><tr><th>Counsellor</th><th>Leads</th><th>Activities</th><th>Enrolled</th><th>Conv.</th><th>Overdue</th><th>Collected</th></tr></thead>
+  <tbody>
+  {% for c in team %}
+  <tr><td>{{ c.name }}{% if not c.active %} <span class="sub">(inactive)</span>{% endif %}</td>
+      <td>{{ c.leads }}</td><td>{{ c.acts }}</td><td>{{ c.enrolled }}</td><td>{{ pct(c.enrolled, c.leads) }}</td>
+      <td class="{{ 'late' if c.overdue }}">{{ c.overdue }}</td><td>{{ c.collected|inr }}</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+{% endif %}
+
+{% for title, head, rows in [('Source performance', 'Source', sources), ('Course demand', 'Course', courses)] %}
+<h2>{{ title }}</h2>
+<div class="tw"><table class="tbl">
+  <thead><tr><th>{{ head }}</th><th>Leads</th><th>Enrolled</th><th>Conv.</th></tr></thead>
+  <tbody>
+  {% for r in rows %}<tr><td>{{ r.k }}</td><td>{{ r.n }}</td><td>{{ r.e|int }}</td><td>{{ pct(r.e, r.n) }}</td></tr>
+  {% else %}<tr><td colspan="4" class="sub">No data in this period.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endfor %}
+
+<h2>Why leads are lost</h2>
+<div class="tw"><table class="tbl">
+  <thead><tr><th>Reason</th><th>Count</th></tr></thead>
+  <tbody>
+  {% for r in lost %}<tr><td>{{ r.k }}</td><td>{{ r.n }}</td></tr>
+  {% else %}<tr><td colspan="2" class="sub">No lost leads in this period.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

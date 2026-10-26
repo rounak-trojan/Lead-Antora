@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ cfg.inst }} · Lead Antora{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app">
+{% from '_brand.html' import logo %}
+{% if user %}
+{% set ep = request.endpoint %}
+<header class="top">
+  <a class="brand" href="{{ url_for('centers') if user.role == 'superadmin' else url_for('dashboard') }}">
+    {{ logo(28, 'lg-app') }}<span>Lead Antora</span></a>
+  {% if user.role != 'superadmin' and cfg.inst != brand %}<span class="inst">{{ cfg.inst }}</span>{% endif %}
+  <button class="navtoggle" type="button" aria-label="Menu" onclick="document.body.classList.toggle('navopen')">☰</button>
+  <nav>
+    {% if user.role == 'superadmin' %}
+    <a href="{{ url_for('centers') }}" class="on">Centers</a>
+    {% else %}
+    <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep == 'dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('leads') }}" class="{{ 'on' if ep in ['leads','lead_detail','lead_new','lead_edit'] }}">{{ 'Leads' if user.role == 'admin' else 'My leads' }}</a>
+    <a href="{{ url_for('followups') }}" class="{{ 'on' if ep == 'followups' }}">Follow-ups</a>
+    {% if user.role == 'admin' %}
+    <a href="{{ url_for('team') }}" class="{{ 'on' if ep == 'team' }}">Team</a>
+    <a href="{{ url_for('webhooks') }}" class="{{ 'on' if ep == 'webhooks' }}">Webhooks</a>
+    <a href="{{ url_for('settings') }}" class="{{ 'on' if ep == 'settings' }}">Settings</a>
+    {% endif %}
+    <a href="{{ url_for('account') }}" class="{{ 'on' if ep == 'account' }}">Account</a>
+    {% endif %}
+  </nav>
+  <div class="userbox">
+    <span class="avatar">{{ user.name[:1]|upper }}</span>
+    <span class="me"><b>{{ user.name }}</b><br>{{ user.role|capitalize }}{% if user.center_name %} · {{ user.center_name }}{% endif %}</span>
+    <form method="post" action="{{ url_for('logout') }}" class="inline">{{ csrf_field() }}<button class="btn sm">Sign out</button></form>
+  </div>
+</header>
+{% endif %}
+<main>
+  {% if user and user.role != 'superadmin' and days_left is not none and days_left <= 7 %}
+  <div class="flash error">{{ user.center_name }} access expires {{ 'today' if days_left == 0 else 'in ' ~ days_left ~ ' day(s)' }}. Contact the super admin to renew.</div>
+  {% endif %}
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  {% block body %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block body %}
+<h1>Account</h1>
+<form method="post" class="card" style="max-width:420px">{{ csrf_field() }}
+  <label>Current password<input name="current" type="password" required autocomplete="current-password"></label>
+  <label>New password (8+ characters)<input name="new" type="password" minlength="8" required autocomplete="new-password"></label>
+  <label>Confirm new password<input name="confirm" type="password" minlength="8" required autocomplete="new-password"></label>
+  <button class="btn primary">Update password</button>
+</form>
+{% endblock %}

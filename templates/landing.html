@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lead Antora · Admission CRM for coaching institutes</title>
+  <meta name="description" content="Lead Antora captures enquiries from Instagram, Facebook, Google Ads, YouTube and your website, assigns them to counsellors instantly and makes sure no follow-up is missed.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="lp">
+{% from '_brand.html' import logo %}
+
+<header class="lp-nav" id="top">
+  <div class="lp-wrap lp-nav-in">
+    <a href="#top" class="brand">{{ logo(30, 'lg-nav') }}<span>Lead Antora</span></a>
+    <nav class="lp-links">
+      <a href="#features">Features</a>
+      <a href="#pipeline">Live demo</a>
+      <a href="#roi">ROI calculator</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="lp-actions">
+      <a class="btn" href="{{ url_for('login') }}">Login</a>
+      <a class="btn primary hide-sm" href="#demo">Book a demo</a>
+    </div>
+  </div>
+</header>
+
+<section class="lp-hero">
+  <div class="lp-wrap lp-hero-in">
+    <div class="rv">
+      <span class="eyebrow">Admission CRM for coaching institutes</span>
+      <h1>Every enquiry captured.<br><span class="grad">Every follow-up done.</span></h1>
+      <p class="lead">Lead Antora pulls enquiries from Instagram, Facebook, Google Ads, YouTube and your website into one inbox, hands each one to a counsellor in seconds, and tells your team exactly who to call today.</p>
+      <div class="cta">
+        <a class="btn primary lg" href="#demo">Book a free demo</a>
+        <a class="btn lg" href="#pipeline">Try the live demo</a>
+      </div>
+      <ul class="ticks">
+        <li>Multi-center ready</li><li>WhatsApp in one tap</li><li>Fee tracking built in</li>
+      </ul>
+    </div>
+    <div class="feed card rv" aria-live="polite">
+      <div class="feed-head"><span class="pulse"></span><b>Incoming enquiries</b><span class="sub" id="feedCount">0 captured</span></div>
+      <div id="feed"></div>
+      <div class="feed-foot sub">Simulated preview of the Lead Antora inbox</div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-strip">
+  <div class="lp-wrap">
+    <p class="sub center">One inbox for every channel your students use</p>
+    <div class="chan-row">
+      <span class="chan ig">Instagram</span><span class="chan fb">Facebook</span><span class="chan gg">Google Ads</span>
+      <span class="chan yt">YouTube</span><span class="chan web">Website</span><span class="chan csv">CSV import</span>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec" id="features">
+  <div class="lp-wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Features</span>
+      <h2>Built for the way admissions teams actually work</h2>
+      <p class="sub">Click a feature to see it.</p>
+    </div>
+    <div class="ftabs rv" role="tablist">
+      <button role="tab" data-tab="f1" aria-selected="true">Capture</button>
+      <button role="tab" data-tab="f2" aria-selected="false">Assign</button>
+      <button role="tab" data-tab="f3" aria-selected="false">Follow-ups</button>
+      <button role="tab" data-tab="f4" aria-selected="false">Fees</button>
+      <button role="tab" data-tab="f5" aria-selected="false">Reports</button>
+      <button role="tab" data-tab="f6" aria-selected="false">Multi-center</button>
+    </div>
+
+    <div class="fpanel" id="f1">
+      <div><h3>Leads arrive on their own</h3>
+        <p>Connect Meta lead ads, Google Ads lead forms and your website once. Every enquiry lands in Lead Antora with its source tagged, so you know which ad and which post brought it.</p>
+        <ul class="ticks"><li>Instagram and Facebook lead ads</li><li>Google Ads and YouTube lead forms</li><li>Hosted enquiry page for your bio link</li><li>Repeat enquiries merged, never duplicated</li></ul></div>
+      <div class="mock card">
+        <div class="mrow"><span class="chan ig sm">Instagram Ads</span><b>Riya Sharma</b><span class="sub">NEET 2027</span></div>
+        <div class="mrow"><span class="chan gg sm">Google Ads</span><b>Karan Mehta</b><span class="sub">JEE 2027</span></div>
+        <div class="mrow"><span class="chan web sm">Website</span><b>Ayesha Khan</b><span class="sub">Class 11 Foundation</span></div>
+        <div class="mrow"><span class="chan yt sm">YouTube</span><b>Dev Patel</b><span class="sub">NEET 2027</span></div>
+      </div>
+    </div>
+
+    <div class="fpanel" id="f2" hidden>
+      <div><h3>Round-robin assignment in seconds</h3>
+        <p>Each new lead goes to the next active counsellor automatically. Counsellors see only their own leads. Admins reassign with one click or move a departing counsellor's leads in bulk.</p>
+        <ul class="ticks"><li>Fair, automatic distribution</li><li>Private lead lists per counsellor</li><li>Bulk reassignment</li></ul></div>
+      <div class="mock card">
+        <div class="mrow"><b>Riya Sharma</b><span class="pill b">→ Anjali</span></div>
+        <div class="mrow"><b>Karan Mehta</b><span class="pill b">→ Rahul</span></div>
+        <div class="mrow"><b>Ayesha Khan</b><span class="pill b">→ Fatima</span></div>
+        <div class="mrow"><b>Dev Patel</b><span class="pill b">→ Anjali</span></div>
+      </div>
+    </div>
+
+    <div class="fpanel" id="f3" hidden>
+      <div><h3>Nobody falls through the cracks</h3>
+        <p>Every open lead must have a next follow-up date. Counsellors start the day with overdue, today and this week. Call or WhatsApp with a prefilled message in one tap.</p>
+        <ul class="ticks"><li>Overdue and due-today lists</li><li>One-tap call and WhatsApp</li><li>Full activity timeline per student</li></ul></div>
+      <div class="mock card">
+        <div class="mrow"><span class="pill d">Overdue</span><b>Rohan J.</b><span class="sub">Demo reminder</span></div>
+        <div class="mrow"><span class="pill w">Today</span><b>Meera K.</b><span class="sub">Fee discussion</span></div>
+        <div class="mrow"><span class="pill w">Today</span><b>Sana T.</b><span class="sub">Parent callback</span></div>
+        <div class="mrow"><span class="pill n">Fri</span><b>Kabir M.</b><span class="sub">Batch timing</span></div>
+      </div>
+    </div>
+
+    <div class="fpanel" id="f4" hidden>
+      <div><h3>Fees tracked from enrollment</h3>
+        <p>Record the total fee when a student enrolls and log each payment as it arrives. Pending dues show on the lead and roll up to the dashboard.</p>
+        <ul class="ticks"><li>Total fee, paid and pending</li><li>Payment history on the timeline</li><li>Collection totals per counsellor</li></ul></div>
+      <div class="mock card">
+        <div class="mrow"><b>Total fee</b><span>₹85,000</span></div>
+        <div class="mrow"><b>Paid</b><span class="okc">₹50,000</span></div>
+        <div class="mrow"><b>Pending</b><span class="late">₹35,000</span></div>
+        <div class="bar-mini"><span style="width:59%"></span></div>
+      </div>
+    </div>
+
+    <div class="fpanel" id="f5" hidden>
+      <div><h3>Know what is working</h3>
+        <p>See the full funnel, conversion by source and course, lost reasons, and each counsellor's activity, enrollments and collections. Decide where your next ad rupee goes.</p>
+        <ul class="ticks"><li>Funnel by stage</li><li>Conversion by source and course</li><li>Counsellor leaderboard</li></ul></div>
+      <div class="mock card">
+        <div class="mbar"><span>Instagram Ads</span><i style="width:82%"></i></div>
+        <div class="mbar"><span>Google Ads</span><i style="width:64%"></i></div>
+        <div class="mbar"><span>Website</span><i style="width:47%"></i></div>
+        <div class="mbar"><span>Referral</span><i style="width:31%"></i></div>
+      </div>
+    </div>
+
+    <div class="fpanel" id="f6" hidden>
+      <div><h3>Every branch separate, full control at the top</h3>
+        <p>Run several branches with separate teams, settings and integrations. Each center sees only its own data. The owner manages access, renewals and admins from one place.</p>
+        <ul class="ticks"><li>Isolated data per center</li><li>Per-center courses and sources</li><li>Center-level access control</li></ul></div>
+      <div class="mock card">
+        <div class="mrow"><b>Main Branch</b><span class="pill s">Active</span></div>
+        <div class="mrow"><b>City Center</b><span class="pill s">Active</span></div>
+        <div class="mrow"><b>North Campus</b><span class="pill w">Renews in 5 days</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec alt" id="pipeline">
+  <div class="lp-wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">Live demo</span>
+      <h2>Watch leads move through the pipeline</h2>
+      <p class="sub">Press "Simulate a day" to see how leads progress. Stage rates are illustrative.</p>
+    </div>
+    <div class="pipe card rv">
+      <div class="pipe-top">
+        <div><span class="sub">Day</span><b id="pDay">0</b></div>
+        <div><span class="sub">Total leads</span><b id="pTotal">0</b></div>
+        <div><span class="sub">Enrolled</span><b id="pEnr" class="okc">0</b></div>
+        <div><span class="sub">Conversion</span><b id="pConv">0%</b></div>
+        <div class="pipe-btns"><button class="btn primary" id="pRun" type="button">Simulate a day</button><button class="btn" id="pReset" type="button">Reset</button></div>
+      </div>
+      <div class="pipe-cols" id="pCols"></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec" id="how">
+  <div class="lp-wrap">
+    <div class="sec-head rv"><span class="eyebrow">How it works</span><h2>Live in an afternoon</h2></div>
+    <div class="steps3">
+      <div class="card rv"><span class="num">1</span><h3>Set up your center</h3><p class="sub">Add courses, lead sources and your counsellors.</p></div>
+      <div class="card rv"><span class="num">2</span><h3>Connect your channels</h3><p class="sub">Link Meta and Google Ads, and put your enquiry link in your Instagram bio and YouTube descriptions.</p></div>
+      <div class="card rv"><span class="num">3</span><h3>Start converting</h3><p class="sub">Leads flow in, get assigned, and your team works a clear follow-up list every day.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec alt" id="roi">
+  <div class="lp-wrap">
+    <div class="sec-head rv">
+      <span class="eyebrow">ROI calculator</span>
+      <h2>What is better follow-up worth to you?</h2>
+      <p class="sub">Enter your own numbers. The uplift is your assumption, not our promise.</p>
+    </div>
+    <div class="roi card rv">
+      <div class="roi-in">
+        <label>Enquiries per month <output id="oLeads"></output><input type="range" id="rLeads" min="50" max="3000" step="10" value="300"></label>
+        <label>Current conversion rate <output id="oConv"></output><input type="range" id="rConv" min="1" max="40" step="0.5" value="8"></label>
+        <label>Average course fee <output id="oFee"></output><input type="range" id="rFee" min="5000" max="300000" step="5000" value="60000"></label>
+        <label>Conversion uplift you expect <output id="oUp"></output><input type="range" id="rUp" min="0" max="10" step="0.5" value="2"></label>
+      </div>
+      <div class="roi-out">
+        <div><span class="sub">Enrollments now</span><b id="vNow">0</b></div>
+        <div><span class="sub">Enrollments with uplift</span><b id="vNew">0</b></div>
+        <div class="hl"><span class="sub">Extra fee revenue per month</span><b id="vMonth">₹0</b></div>
+        <div class="hl"><span class="sub">Extra fee revenue per year</span><b id="vYear">₹0</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec" id="faq">
+  <div class="lp-wrap narrow">
+    <div class="sec-head rv"><span class="eyebrow">FAQ</span><h2>Questions institute owners ask</h2></div>
+    <details class="faq rv"><summary>Do I need a website?</summary><p>No. Every center gets a hosted enquiry page. Put its link in your Instagram bio, YouTube descriptions and Facebook page button.</p></details>
+    <details class="faq rv"><summary>Can I run several branches?</summary><p>Yes. Each center has its own team, courses, sources, integrations and data. Centers never see each other's leads.</p></details>
+    <details class="faq rv"><summary>Can counsellors see each other's leads?</summary><p>No. Counsellors see only the leads assigned to them. Admins see the whole center.</p></details>
+    <details class="faq rv"><summary>Can I bring my existing leads?</summary><p>Yes. Import a CSV with name and phone at minimum. Duplicates by phone number are skipped automatically.</p></details>
+    <details class="faq rv"><summary>What happens when the same student enquires twice?</summary><p>The enquiry is added to the existing lead's timeline and the follow-up moves to today. A lead marked lost is reopened automatically.</p></details>
+  </div>
+</section>
+
+<section class="lp-sec cta-sec" id="demo">
+  <div class="lp-wrap demo-in">
+    <div class="rv">
+      <span class="eyebrow light">Book a demo</span>
+      <h2>See Lead Antora with your own courses and channels</h2>
+      <p>Leave your details and we will call you to schedule a 20-minute walkthrough.</p>
+    </div>
+    <form method="post" action="{{ url_for('demo_request') }}" class="card demo-form rv">{{ csrf_field() }}
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+      {% endwith %}
+      <div class="grid">
+        <label>Your name<input name="name" maxlength="100" required autocomplete="name"></label>
+        <label>Mobile number<input name="phone" inputmode="tel" maxlength="20" required autocomplete="tel"></label>
+        <label>Institute name<input name="institute" maxlength="120" required></label>
+        <label>City<input name="city" maxlength="80"></label>
+      </div>
+      <label>Number of centers<select name="centers"><option>1</option><option>2–3</option><option>4–10</option><option>10+</option></select></label>
+      <label>Anything we should know? (optional)<textarea name="message" rows="2" maxlength="1000"></textarea></label>
+      <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <button class="btn primary wide lg">Request my demo</button>
+    </form>
+  </div>
+</section>
+
+<footer class="lp-foot">
+  <div class="lp-wrap lp-foot-in">
+    <a href="#top" class="brand">{{ logo(24, 'lg-foot') }}<span>Lead Antora</span></a>
+    <span class="sub">© {{ today.year }} Lead Antora. Admission CRM for coaching institutes.</span>
+    <a class="sub" href="{{ url_for('login') }}">Login</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var inr = new Intl.NumberFormat('en-IN');
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  var nav = document.querySelector('.lp-nav');
+  window.addEventListener('scroll', function () { nav.classList.toggle('scrolled', window.scrollY > 8); });
+
+  /* live lead feed */
+  var FN = ['Aarav', 'Diya', 'Ishaan', 'Ananya', 'Kabir', 'Meera', 'Rohan', 'Sana', 'Vihaan', 'Tanvi', 'Arjun', 'Nisha', 'Zoya', 'Aditya'];
+  var LN = ['S.', 'K.', 'M.', 'R.', 'P.', 'D.', 'J.', 'T.', 'N.'];
+  var CO = ['NEET 2027', 'JEE 2027', 'Class 11 Foundation', 'UPSC Foundation'];
+  var CH = [['Instagram Ads', 'ig'], ['Facebook Ads', 'fb'], ['Google Ads', 'gg'], ['YouTube', 'yt'], ['Website', 'web']];
+  var TE = ['Anjali', 'Rahul', 'Fatima', 'Vikram'];
+  var feed = document.getElementById('feed'), countEl = document.getElementById('feedCount'), n = 0, ti = 0;
+  function addLead() {
+    var ch = pick(CH), first = pick(FN), el = document.createElement('div');
+    el.className = 'fl';
+    el.innerHTML = '<div class="fl-av">' + first[0] + '</div>' +
+      '<div class="fl-body"><b>' + first + ' ' + pick(LN) + '</b><span class="sub">' + pick(CO) + '</span></div>' +
+      '<div class="fl-meta"><span class="chan sm ' + ch[1] + '">' + ch[0] + '</span>' +
+      '<span class="sub">→ ' + TE[ti++ % TE.length] + ' · ' + (8 + Math.floor(Math.random() * 40)) + 's</span></div>';
+    feed.insertBefore(el, feed.firstChild);
+    while (feed.children.length > 5) feed.removeChild(feed.lastChild);
+    n++; countEl.textContent = n + ' captured';
+  }
+  for (var i = 0; i < 3; i++) addLead();
+  if (!reduce) setInterval(addLead, 2600);
+
+  /* feature tabs */
+  var tabs = document.querySelectorAll('[data-tab]');
+  tabs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      tabs.forEach(function (t) {
+        t.setAttribute('aria-selected', t === b ? 'true' : 'false');
+        document.getElementById(t.dataset.tab).hidden = t !== b;
+      });
+    });
+  });
+
+  /* pipeline simulator */
+  var ST = [['New', 'n'], ['Contacted', 'b'], ['Demo', 'w'], ['Enrolled', 's'], ['Lost', 'd']];
+  var P, day, cols = document.getElementById('pCols');
+  function resetP() { P = { New: 24, Contacted: 0, Demo: 0, Enrolled: 0, Lost: 0 }; day = 0; renderP(); }
+  function step() {
+    day++;
+    var e = Math.round(P.Demo * 0.45), ld = Math.round(P.Demo * 0.2);
+    P.Demo -= e + ld; P.Enrolled += e; P.Lost += ld;
+    var d = Math.round(P.Contacted * 0.5), lc = Math.round(P.Contacted * 0.15);
+    P.Contacted -= d + lc; P.Demo += d; P.Lost += lc;
+    var c = Math.round(P.New * 0.8);
+    P.New -= c; P.Contacted += c;
+    P.New += 8 + Math.floor(Math.random() * 9);
+    renderP();
+  }
+  function renderP() {
+    var total = 0; ST.forEach(function (s) { total += P[s[0]]; });
+    cols.innerHTML = ST.map(function (s) {
+      var v = P[s[0]], dots = '';
+      for (var k = 0; k < Math.min(v, 36); k++) dots += '<i class="' + s[1] + '"></i>';
+      return '<div class="pcol"><div class="pcol-h"><span>' + s[0] + '</span><b>' + v + '</b></div><div class="dots">' + dots +
+        (v > 36 ? '<em>+' + (v - 36) + '</em>' : '') + '</div></div>';
+    }).join('');
+    document.getElementById('pDay').textContent = day;
+    document.getElementById('pTotal').textContent = total;
+    document.getElementById('pEnr').textContent = P.Enrolled;
+    document.getElementById('pConv').textContent = total ? Math.round(P.Enrolled * 100 / total) + '%' : '0%';
+  }
+  document.getElementById('pRun').addEventListener('click', step);
+  document.getElementById('pReset').addEventListener('click', resetP);
+  resetP();
+
+  /* ROI calculator */
+  var R = ['Leads', 'Conv', 'Fee', 'Up'].reduce(function (o, k) { o[k] = document.getElementById('r' + k); return o; }, {});
+  function calc() {
+    var leads = +R.Leads.value, conv = +R.Conv.value, fee = +R.Fee.value, up = +R.Up.value;
+    document.getElementById('oLeads').textContent = inr.format(leads);
+    document.getElementById('oConv').textContent = conv + '%';
+    document.getElementById('oFee').textContent = '₹' + inr.format(fee);
+    document.getElementById('oUp').textContent = '+' + up + ' pts';
+    var now = leads * conv / 100, nw = leads * (conv + up) / 100, extra = (nw - now) * fee;
+    document.getElementById('vNow').textContent = inr.format(Math.round(now));
+    document.getElementById('vNew').textContent = inr.format(Math.round(nw));
+    document.getElementById('vMonth').textContent = '₹' + inr.format(Math.round(extra));
+    document.getElementById('vYear').textContent = '₹' + inr.format(Math.round(extra * 12));
+  }
+  Object.keys(R).forEach(function (k) { R[k].addEventListener('input', calc); });
+  calc();
+
+  /* reveal on scroll */
+  var rv = document.querySelectorAll('.rv');
+  if (reduce || !('IntersectionObserver' in window)) { rv.forEach(function (e) { e.classList.add('in'); }); return; }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  rv.forEach(function (e) { io.observe(e); });
+})();
+</script>
+</body>
+</html>

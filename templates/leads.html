@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import lead_row with context %}
+{% block body %}
+<div class="toolbar">
+  <form method="get" class="filters">
+    <input name="q" value="{{ args.get('q', '') }}" placeholder="Search name, phone, city, email">
+    <select name="stage"><option value="">All stages</option>
+      {% for s in STAGES %}<option {{ 'selected' if args.get('stage') == s }}>{{ s }}</option>{% endfor %}</select>
+    <select name="course"><option value="">All courses</option>
+      {% for c in cfg.courses %}<option {{ 'selected' if args.get('course') == c }}>{{ c }}</option>{% endfor %}</select>
+    {% if user.role == 'admin' %}
+    <select name="aid"><option value="">All counsellors</option>
+      <option value="none" {{ 'selected' if args.get('aid') == 'none' }}>Unassigned</option>
+      {% for c in counsellors %}<option value="{{ c.id }}" {{ 'selected' if args.get('aid') == c.id|string }}>{{ c.name }}</option>{% endfor %}</select>
+    {% endif %}
+    <button class="btn">Filter</button>
+  </form>
+  <a class="btn primary" href="{{ url_for('lead_new') }}">New lead</a>
+</div>
+
+{% if user.role == 'admin' %}
+  {% if unassigned %}
+  <form method="post" action="{{ url_for('auto_assign') }}" class="warn">{{ csrf_field() }}
+    {{ unassigned }} open lead(s) unassigned <button class="btn sm">Auto-assign round robin</button></form>
+  {% endif %}
+  <details class="card"><summary>Import or export leads</summary>
+    <form method="post" action="{{ url_for('import_csv') }}" enctype="multipart/form-data" style="margin-top:10px">{{ csrf_field() }}
+      <p class="sub">CSV columns: name, phone, course, source, city, target, parent phone, email. Duplicates by phone are skipped. Leads are assigned round robin to active counsellors.</p>
+      <input type="file" name="file" accept=".csv" required style="width:auto">
+      <button class="btn">Import CSV</button>
+      <a class="btn" href="{{ url_for('export_csv') }}">Export all leads</a>
+    </form>
+  </details>
+{% endif %}
+
+<p class="sub">{{ total }} lead(s)</p>
+{% for l in rows %}{{ lead_row(l, counsellors if user.role == 'admin' else none) }}
+{% else %}<p class="empty">No leads match these filters.</p>{% endfor %}
+
+{% if pages > 1 %}
+<div class="pager">
+  {% if page > 1 %}<a class="btn sm" href="{{ url_for('leads', page=page-1, **qs) }}">Previous</a>{% endif %}
+  <span class="sub">Page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a class="btn sm" href="{{ url_for('leads', page=page+1, **qs) }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
