@@ -161,7 +161,7 @@ def csv_safe(v):
 
 
 # ---------- built-in SQLite database (created automatically) ----------
-DB_PATH = os.environ.get('DB_PATH') or os.path.join(BASE, 'data', 'leads.db')
+DB_PATH = os.environ.get('DB_PATH') or ('/tmp/leads.db' if os.environ.get('VERCEL') else os.path.join(BASE, 'data', 'leads.db'))
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 sqlite3.register_adapter(date, lambda d: d.isoformat())
