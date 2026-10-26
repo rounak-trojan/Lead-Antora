@@ -41,7 +41,7 @@ if len(SUPERADMIN_PASSWORD) < 10:
     raise RuntimeError('SUPERADMIN_PASSWORD in app.py must be at least 10 characters.')
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(os.path.join(BASE, '.env'), override=True)
+load_dotenv(os.path.join(BASE, '.env'), override=False)
 
 
 def load_secret_key():
